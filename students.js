@@ -13,6 +13,13 @@ let sortField       = 'enrolledDate';
 let sortDir         = 'desc';
 let deleteTargetId  = null;
 
+// ─── Per-user Firestore path helper ─────────────────────────
+function getStudentsCollection() {
+  const user = auth.currentUser;
+  if (!user) throw new Error("User not authenticated");
+  return db.collection("users").doc(user.uid).collection("students");
+}
+
 // ─── Demo Data ───────────────────────────────────────────────
 const DEMO_STUDENTS = [
   { id:'s1',  name:'Aditya Kumar',     email:'aditya@email.com',   course:'Data Science',       gpa:3.9, status:'Active',   phone:'555-0101', address:'Mumbai, India',       enrolledDate:'2024-01-15' },
@@ -45,7 +52,7 @@ function initStudents() {
     if (!stored) saveDemo();
     renderAll();
   } else {
-    db.collection('students').orderBy('createdAt','desc')
+    getStudentsCollection().orderBy('createdAt','desc')
       .onSnapshot(snapshot => {
         allStudents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderAll();
@@ -373,7 +380,7 @@ function addStudent(data, callback) {
     renderAll();
     callback();
   } else {
-    db.collection('students').add(data)
+    getStudentsCollection().add(data)
       .then(callback)
       .catch(err => { showToast('Failed to add student. Please try again.', 'error'); resetModalBtn(); });
   }
@@ -388,7 +395,7 @@ function updateStudent(id, data, callback) {
     renderAll();
     callback();
   } else {
-    db.collection('students').doc(id).update(data)
+    getStudentsCollection().doc(id).update(data)
       .then(callback)
       .catch(err => { showToast('Failed to update student. Please try again.', 'error'); resetModalBtn(); });
   }
@@ -415,7 +422,7 @@ function confirmDelete() {
     renderAll();
     showToast('Student removed.', 'success');
   } else {
-    db.collection('students').doc(id).delete()
+    getStudentsCollection().doc(id).delete()
       .then(() => showToast('Student removed.', 'success'))
       .catch(err => showToast('Failed to delete student. Please try again.', 'error'));
   }

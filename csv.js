@@ -169,7 +169,7 @@ function importCsvStudents() {
     // Batch write to Firestore
     const batch = db.batch();
     pendingCsvRows.forEach(row => {
-      const ref = db.collection('students').doc();
+      const ref = getStudentsCollection().doc();
       batch.set(ref, row);
     });
     batch.commit()
