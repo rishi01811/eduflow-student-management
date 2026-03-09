@@ -148,15 +148,9 @@ function handleSignup() {
 function handleGoogleSignIn() {
   if (window.DEMO_MODE) { handleDemoLogin(); return; }
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider)
-    .then(() => {
-      showToast('Signed in with Google! ✅', 'success');
-      setTimeout(() => window.location.href = 'dashboard.html', 800);
-    })
+  auth.signInWithRedirect(provider)
     .catch(err => {
-      if (err.code !== 'auth/popup-closed-by-user') {
-        showToast('Google sign-in failed. Please try again.', 'error');
-      }
+      showToast('Google sign-in failed. Please try again.', 'error');
     });
 }
 
