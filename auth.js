@@ -148,9 +148,16 @@ function handleSignup() {
 function handleGoogleSignIn() {
   if (window.DEMO_MODE) { handleDemoLogin(); return; }
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithRedirect(provider)
+  auth.signInWithPopup(provider)
+    .then(() => {
+      showToast('Signed in with Google! ✅', 'success');
+      setTimeout(() => window.location.href = 'dashboard.html', 800);
+    })
     .catch(err => {
-      showToast('Google sign-in failed. Please try again.', 'error');
+      console.error('Google sign-in error:', err.code, err.message);
+      if (err.code !== 'auth/popup-closed-by-user') {
+        showToast('Google sign-in failed. Please try again.', 'error');
+      }
     });
 }
 
