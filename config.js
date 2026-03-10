@@ -12,6 +12,9 @@ const firebaseConfig = {
   measurementId: "G-LRTL3NKVB0"
 };
 
+// Google OAuth Client ID (from Google Cloud Console → Credentials → OAuth 2.0 Client IDs)
+const GOOGLE_CLIENT_ID = "871386211552-7tlovt270aj5ttcgi84fv6hs7bg78u2j.apps.googleusercontent.com";
+
 // Initialize Firebase (compat SDK)
 firebase.initializeApp(firebaseConfig);
 

@@ -144,21 +144,34 @@ function handleSignup() {
     });
 }
 
-// ─── Google Sign-In ──────────────────────────────────────────
+// ─── Google Sign-In (via Google Identity Services) ───────────
 function handleGoogleSignIn() {
   if (window.DEMO_MODE) { handleDemoLogin(); return; }
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider)
-    .then(() => {
-      showToast('Signed in with Google! ✅', 'success');
-      setTimeout(() => window.location.href = 'dashboard.html', 800);
-    })
-    .catch(err => {
-      console.error('Google sign-in error:', err.code, err.message);
-      if (err.code !== 'auth/popup-closed-by-user') {
+
+  const tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: 'email profile',
+    callback: (response) => {
+      if (response.error) {
+        console.error('GIS error:', response);
         showToast('Google sign-in failed. Please try again.', 'error');
+        return;
       }
-    });
+      // Use the access token to create a Firebase credential
+      const credential = firebase.auth.GoogleAuthProvider.credential(null, response.access_token);
+      auth.signInWithCredential(credential)
+        .then(() => {
+          showToast('Signed in with Google! ✅', 'success');
+          setTimeout(() => window.location.href = 'dashboard.html', 800);
+        })
+        .catch(err => {
+          console.error('Firebase credential error:', err);
+          showToast('Google sign-in failed. Please try again.', 'error');
+        });
+    },
+  });
+
+  tokenClient.requestAccessToken();
 }
 
 // ─── Password Reset ──────────────────────────────────────────
