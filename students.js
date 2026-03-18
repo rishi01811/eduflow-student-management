@@ -14,10 +14,10 @@ let sortDir         = 'desc';
 let deleteTargetId  = null;
 
 // ─── Per-user Firestore path helper ─────────────────────────
-function getStudentsCollection() {
-  const user = auth.currentUser;
-  if (!user) throw new Error("User not authenticated");
-  return db.collection("users").doc(user.uid).collection("students");
+function getStudentsCollection(userId) {
+  const uid = userId || auth.currentUser?.uid;
+  if (!uid) throw new Error("User not authenticated");
+  return db.collection("users").doc(uid).collection("students");
 }
 
 // ─── Demo Data ───────────────────────────────────────────────
@@ -45,7 +45,7 @@ const DEMO_STUDENTS = [
 ];
 
 // ─── Init: load students from store ─────────────────────────
-function initStudents() {
+function initStudents(user) {
   if (isDemo()) {
     const stored = localStorage.getItem('eduflow_students');
     allStudents = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEMO_STUDENTS));
@@ -55,16 +55,16 @@ function initStudents() {
   } else {
     return new Promise((resolve) => {
       let resolved = false;
-      const user = auth.currentUser;
-      console.log('[EduFlow] initStudents called, current user:', user ? user.uid : 'NULL');
-      if (!user) {
+      const currentUser = user || auth.currentUser;
+      console.log('[EduFlow] initStudents called, current user:', currentUser ? currentUser.uid : 'NULL');
+      if (!currentUser) {
         console.warn('[EduFlow] No authenticated user — cannot load students');
         allStudents = [];
         renderAll();
         resolve();
         return;
       }
-      getStudentsCollection().orderBy('createdAt','desc')
+      getStudentsCollection(currentUser.uid).orderBy('createdAt','desc')
         .onSnapshot(snapshot => {
           console.log('[EduFlow] Firestore snapshot received, docs:', snapshot.size);
           allStudents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));

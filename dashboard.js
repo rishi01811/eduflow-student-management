@@ -408,7 +408,7 @@ function refreshCharts() {
     updateDateDisplay();
 
     try {
-      await initStudents();   // wait for Firestore data
+      await initStudents(user);   // wait for Firestore data
       console.log('[EduFlow] initStudents complete, allStudents count:', allStudents.length);
     } catch (err) {
       console.error('[EduFlow] initStudents failed:', err);
