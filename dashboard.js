@@ -400,12 +400,19 @@ function refreshCharts() {
 
 // ─── Main Init ────────────────────────────────────────────────
  document.addEventListener('DOMContentLoaded', () => {
+  console.log('[EduFlow] DOMContentLoaded — starting auth guard');
   // Auth guard
   initAuthGuard(async user => {
+    console.log('[EduFlow] Auth callback fired, user:', user?.uid || user?.email || 'unknown');
     populateUserUI(user);
     updateDateDisplay();
 
-    await initStudents();   // wait for Firestore data
+    try {
+      await initStudents();   // wait for Firestore data
+      console.log('[EduFlow] initStudents complete, allStudents count:', allStudents.length);
+    } catch (err) {
+      console.error('[EduFlow] initStudents failed:', err);
+    }
 
     initOverviewCharts();   // charts render after data loads
     loadWeather();

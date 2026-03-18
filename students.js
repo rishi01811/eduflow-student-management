@@ -51,15 +51,33 @@ function initStudents() {
     allStudents = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEMO_STUDENTS));
     if (!stored) saveDemo();
     renderAll();
+    return Promise.resolve();
   } else {
-    getStudentsCollection().orderBy('createdAt','desc')
-      .onSnapshot(snapshot => {
-        allStudents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return new Promise((resolve) => {
+      let resolved = false;
+      const user = auth.currentUser;
+      console.log('[EduFlow] initStudents called, current user:', user ? user.uid : 'NULL');
+      if (!user) {
+        console.warn('[EduFlow] No authenticated user — cannot load students');
+        allStudents = [];
         renderAll();
-      }, err => {
-        console.error('Firestore error:', err);
-        showToast('Could not load students from Firestore.', 'error');
-      });
+        resolve();
+        return;
+      }
+      getStudentsCollection().orderBy('createdAt','desc')
+        .onSnapshot(snapshot => {
+          console.log('[EduFlow] Firestore snapshot received, docs:', snapshot.size);
+          allStudents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderAll();
+          if (!resolved) { resolved = true; resolve(); }
+        }, err => {
+          console.error('[EduFlow] Firestore onSnapshot error:', err.code, err.message);
+          allStudents = [];
+          renderAll();
+          showToast('Could not load students: ' + (err.code || err.message), 'error');
+          if (!resolved) { resolved = true; resolve(); }
+        });
+    });
   }
 }
 
